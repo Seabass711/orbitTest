@@ -14,6 +14,8 @@ timeFactor = 240
 
 inAddingMenu = False
 
+Collisions = False
+
 objects = []
 particles = []
 
@@ -67,15 +69,16 @@ class ball():
                         self.xVel += (force * direction[0]) * (timeFactor/FPS)
                         self.yVel += (force * direction[1]) * (timeFactor/FPS)
                     else:
-                        if False:
+                        if Collisions:
                             print('Collision.')
                             if object.mass > self.mass:
                                 objects.remove(self)
                                 del self
+                                break
                             else:
                                 objects.remove(object)
                                 del object
-                                break
+                                
     def newTrail(self):
         particles.append(ball(self.canvas, self.colour, [self.position[0]-centreX, self.position[1]-centreY], 2, 0, 0, 0))
     def shrink(self):
@@ -132,12 +135,13 @@ def unzoom(position):
 def renderScreen(objects):
     screen.fill((0,0,0))
     for object in objects:
-        if object.getShape() == 'Circle':
-            try:
-                pg.draw.circle(object.canvas, object.colour, realToAbs(object.position), math.ceil(object.radius/zoomFactor))
-                object.arrowLine.render()
-            except:
-                pass
+        if 0 < (realToAbs(object.position)[0]+object.radius/zoomFactor) and 800 > (realToAbs(object.position)[0]-object.radius/zoomFactor) and 0 < (realToAbs(object.position)[1]+object.radius/zoomFactor) and 800 > (realToAbs(object.position)[1]-object.radius/zoomFactor):
+            if object.getShape() == 'Circle':
+                try:
+                    pg.draw.circle(object.canvas, object.colour, realToAbs(object.position), math.ceil(object.radius/zoomFactor))
+                    object.arrowLine.render()
+                except:
+                    pass
     for particle in particles:
         if particle.getShape() == 'Circle':
             try:
@@ -149,26 +153,14 @@ def renderScreen(objects):
     
     pg.display.update()
 
-if False:
-    doga = ball(screen, (0,255,255), [0,0], 10, 0, -.1, 1000)
-    ian = ball(screen, (255,0,0), [500,500], 10, -.1, .1 , 10)
-    objects.append(doga)
-    objects.append(ian)
-
-    sustingus = ball(screen, (255,255,0), [-200,-200], 2, 0, 0 , 1)
-    objects.append(sustingus)
-
-    superStresseman = ball(screen, (255,0,255), [800,800], 1, 0.001, 0 , 1)
-    objects.append(superStresseman)
-
 if True:
-    sun = ball(screen, (255,255,0), [0,0], 20, 0, -0.05 , 100)
+    sun = ball(screen, (255,255,0), [0,0], 20, 0, -0.02 , 100)
     objects.append(sun)
 
-    earth = ball(screen, (0,0,255), [400, 0], 0.5, 0, 0.5 , 10)
+    earth = ball(screen, (0,0,255), [400, 0], 0.5, 0, 0.5 , 3)
     objects.append(earth)
 
-    moon = ball(screen, (200,200,200), [450,0], 0.2, 0, 0.7 , 1)
+    moon = ball(screen, (200,200,200), [380,0], 0.2, 0, 0.3 , 0.1)
     objects.append(moon)
 
 
@@ -196,19 +188,10 @@ while True:
                         print('Killed')
                         del object
         if event.type == pg.KEYDOWN:
-            if event.key == pg.K_0:
-                print('jarona...')
-                FPS = 30
-            if event.key == pg.K_1:
-                print('sus')
-                FPS = 60
-            elif event.key == pg.K_2:
-                print('stingus')
-                FPS = 120
-            elif event.key == pg.K_3:
-                print('im falling!')
-                FPS = 240
-            elif event.key == pg.K_SPACE:
+            if event.key == pg.K_c:
+                print('Collisions ooo')
+                Collisions = not Collisions
+            if event.key == pg.K_SPACE:
                 if inAddingMenu:
                     bodyName.moving = True
                     inAddingMenu = False
@@ -244,12 +227,14 @@ while True:
                 timeFactor *= 2
                 if FPS < 2400:
                     FPS *= 2
+                    print(FPS)
                 else:
                     print('FPS Cap reached. Simulation quality may vary.')
             if event.key == pg.K_DOWN:
-                timeFactor /= 2
                 if FPS > 48:
+                    timeFactor /= 2
                     FPS /= 2
+                    print(FPS)
                 else:
                     print('FPS Lower bound reached.')
             if event.key == pg.K_q:
